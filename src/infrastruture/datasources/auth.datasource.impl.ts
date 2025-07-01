@@ -2,6 +2,7 @@ import {AuthDatasource, CustomError, RegisterUserDto, UserEntity} from "../../do
 import {BcryptAdapter} from "../../config";
 import {UserModel} from "../../data";
 import {UserMapper} from "../mappers/user.mapper";
+import {LoginUserDto} from "../../domain/dto/auth/login-user.dto";
 type HashFunction = (password: string) => string;
 type CompareFunction = (password: string, hashed: string) => boolean;
 
@@ -25,6 +26,20 @@ export class AuthDatasourceImpl implements AuthDatasource {
 
             await user.save();
 
+            return UserMapper.userEntityFromObject(user);
+        } catch (e) {
+            if (e instanceof CustomError) {
+                throw e;
+            }
+            throw CustomError.internalServerError();
+        }
+    }
+    async login(loginUserDto: LoginUserDto): Promise<UserEntity> {
+        const { email, password } = loginUserDto;
+        try {
+            const user = await UserModel.findOne({ email });
+            if (!user) throw CustomError.badRequest('User not found.');
+            if (!this.comparePassword(password, user.password)) throw CustomError.unauthorized('Invalid password/email');
             return UserMapper.userEntityFromObject(user);
         } catch (e) {
             if (e instanceof CustomError) {

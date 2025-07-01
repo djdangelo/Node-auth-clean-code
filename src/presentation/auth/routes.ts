@@ -12,6 +12,7 @@ export class AuthRoutes {
         const routes =  Router();
         const controller = new AuthController(authRepository);
 
+        // @ts-ignore
         routes.post('/login', controller.login);
         // @ts-ignore
         routes.post('/register', controller.register);
