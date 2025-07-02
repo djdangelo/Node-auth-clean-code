@@ -2,21 +2,11 @@ import {AuthRepository} from "../../repositories/auth.repository";
 import {JwtAdapter} from "../../../config";
 import {CustomError} from "../../errors/custom.error";
 import {LoginUserDto} from "../../dto/auth/login-user.dto";
-
-type SingToken = (payload: Object, duration?: string) => Promise<string|null>;
-
+import {SingToken} from "../../@types/sing-token.type";
+import {UserResponse} from "../../interfaces/user-response.interface";
 
 interface LoginUserUseCase {
-    execute(loginUserDto: LoginUserDto): Promise<UserToken>;
-}
-
-interface UserToken {
-    token: string;
-    user: {
-        email: string;
-        id: string;
-        name: string;
-    }
+    execute(loginUserDto: LoginUserDto): Promise<UserResponse>;
 }
 
 export class LoginUser implements LoginUserUseCase {
@@ -25,7 +15,7 @@ export class LoginUser implements LoginUserUseCase {
                 private readonly singToken: SingToken = JwtAdapter.generateToken) {
     }
 
-    async execute(loginUserDto: LoginUserDto): Promise<UserToken> {
+    async execute(loginUserDto: LoginUserDto): Promise<UserResponse> {
         const user = await this.authRepository.login(loginUserDto);
         const token = await this.singToken({id: user.id}, '2h') || '';
         if (!token) {

@@ -2,21 +2,11 @@ import {RegisterUserDto} from "../../dto/auth/register-user.dto";
 import {AuthRepository} from "../../repositories/auth.repository";
 import {JwtAdapter} from "../../../config";
 import {CustomError} from "../../errors/custom.error";
-
-type SingToken = (payload: Object, duration?: string) => Promise<string|null>;
-
+import {SingToken} from "../../@types/sing-token.type";
+import {UserResponse} from "../../interfaces/user-response.interface";
 
 interface RegisterUserUseCase {
-    execute(registerUserDto: RegisterUserDto): Promise<UserToken>;
-}
-
-interface UserToken {
-    token: string;
-    user: {
-        email: string;
-        id: string;
-        name: string;
-    }
+    execute(registerUserDto: RegisterUserDto): Promise<UserResponse>;
 }
 
 export class RegisterUser  implements RegisterUserUseCase {
@@ -25,7 +15,7 @@ export class RegisterUser  implements RegisterUserUseCase {
                 private readonly singToken: SingToken = JwtAdapter.generateToken) {
     }
 
-    async execute(registerUserDto: RegisterUserDto): Promise<UserToken> {
+    async execute(registerUserDto: RegisterUserDto): Promise<UserResponse> {
         const user = await this.authRepository.register(registerUserDto);
         const token = await this.singToken({id: user.id}, '2h') || '';
         if (!token) {
@@ -40,5 +30,4 @@ export class RegisterUser  implements RegisterUserUseCase {
             }
         }
     }
-
 }
